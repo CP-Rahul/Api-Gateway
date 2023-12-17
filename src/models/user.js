@@ -2,10 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
 const bcrypt = require('bcrypt');
-
 const { ServerConfig } = require('../config');
-
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -15,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsToMany(Role, {UserRole});
+      this.belongsToMany(models.Role, {through: 'UserRole'})
     }
   }
   User.init({
@@ -24,23 +23,24 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
       validate: {
-        isEmail: true,
+        isEmail: true
       }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        len: [8,12]
+        len: [3, 50]
       }
-    }
+    },
   }, {
     sequelize,
     modelName: 'User',
   });
-  User.beforeCreate(function encryptUser(user) {
-    const encryptedPassword = bcrypt.hashSync(user.password, +ServerConfig.HASH);
+
+  User.beforeCreate(function encrypt(user) {
+    const encryptedPassword = bcrypt.hashSync(user.password, +ServerConfig.SALT_ROUNDS);
     user.password = encryptedPassword;
-  })
+  });
   return User;
 };
