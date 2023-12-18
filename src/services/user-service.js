@@ -1,15 +1,19 @@
 const { StatusCodes, BAD_REQUEST } = require('http-status-codes');
 
 const { UserRepository } = require('../repositories');
+const { RoleRepository } = require('../repositories');
 const AppError = require('../utils/errors/app-error');
-const { Auth } = require('../utils/common');
+const { Auth, ENUMS } = require('../utils/common');
 
 
 const userRepository = new UserRepository();
+const roleRepository = new RoleRepository();
 
 async function createUser(data) {
     try {
         const user = await userRepository.create(data);
+        const role = await roleRepository.getRoleByname(ENUMS.USER_ROLES.CUSTOMER);
+        user.addRole(role);
         return user;
     } catch (error) {
         if(error.name == 'SequelizeUniqueConstraintError' || error.name == 'SequelizeValidationError') {
@@ -68,6 +72,10 @@ async function isAuthenticated(token) {
         
     }
 }
+
+// async function addRoleToUser(data) {
+
+// }
 
 module.exports = {
     createUser,

@@ -14,13 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   UserRole.init({
-    userId: {
+    UserId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      onDelete: 'cascade',
     },
-    roleId: {
+    RoleId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      onDelete: 'cascade',
     }
   }, {
     sequelize,
