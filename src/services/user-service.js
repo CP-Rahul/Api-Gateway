@@ -51,6 +51,7 @@ async function signin(data) {
 
 async function isAuthenticated(token) {
     try {
+        console.log(token)
         if(!token) {
             throw new AppError('Missing JWT token', StatusCodes.BAD_REQUEST);
         }
@@ -73,12 +74,46 @@ async function isAuthenticated(token) {
     }
 }
 
-// async function addRoleToUser(data) {
+async function addRoleToUser(data) {
+    try {
+        const user = await userRepository.get(data.id);
+        if(!user) {
+            throw new AppError('User not exixts', StatusCodes.BAD_REQUEST);
+        }
+        const role = await roleRepository.getRoleByname(data.role);
+        if(!user) {
+            throw new AppError('No role found', StatusCodes.BAD_REQUEST);
+        }
+        user.addRole(role);
+        return user;
+    } catch (error) {
+        if(error instanceof AppError) throw error;
+        throw new AppError('Cannot assign role', StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+}
 
-// }
+async function isAdmin(id) {
+    try {
+        const user = await userRepository.get(id);
+        if(!user) {
+            throw new AppError('No user found for the given id', StatusCodes.NOT_FOUND);
+        }
+        const adminrole = await roleRepository.getRoleByname(ENUMS.USER_ROLES.ADMIN);
+        if(!adminrole) {
+            throw new AppError('No user found for the given role', StatusCodes.NOT_FOUND);
+        }
+        return user.hasRole(adminrole);
+    } catch(error) {
+        if(error instanceof AppError) throw error;
+        console.log(error);
+        throw new AppError('Something went wrong', StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+}
 
 module.exports = {
     createUser,
     signin,
-    isAuthenticated
+    isAuthenticated,
+    addRoleToUser,
+    isAdmin
 }
